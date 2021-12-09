@@ -35,3 +35,6 @@ class PostDetailsAPIView(APIView, PostManage):
             if not new['data'] is None: return Response(new['data'], status=new['status'])
         except KeyError:
             return Response(new['errors'], status=new['status'])
+
+    def delete(self, request, pk):
+        return Response(self.del_handle(request, pk))
