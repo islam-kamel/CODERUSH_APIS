@@ -2,6 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
+import posts_apis.helpers.image_file
 
 
 class Migration(migrations.Migration):

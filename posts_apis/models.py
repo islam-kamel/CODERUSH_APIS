@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.timezone import datetime
 
-from posts_apis.helpers.src.image_file import ImageManage
+from .helpers.image_file import ImageManage
 
 image_manage = ImageManage()
 
