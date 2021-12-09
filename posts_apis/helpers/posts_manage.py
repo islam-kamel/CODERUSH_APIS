@@ -15,9 +15,9 @@ class Manage(Serializer, GetObject, ImageManage):
     @staticmethod
     def response_handel(response=None, status_code=status.HTTP_200_OK):
         try:
-            return {'data': response.data, 'status': status_code}
+            return {"data": response.data, "status": status_code}
         except AttributeError:
-            return {'errors': response, 'status': status_code}
+            return {"errors": response, "status": status_code}
 
 
 class PostManage(Manage):
@@ -33,19 +33,21 @@ class PostManage(Manage):
         return self.response_handel(serializer)
 
     def __save_post__(self, serializer, status_code=status.HTTP_201_CREATED):
-        if not serializer.is_valid(): return self.response_handel(serializer.errors,
-                                                                  status_code=status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return self.response_handel(
+                serializer.errors, status.HTTP_400_BAD_REQUEST
+            )
         serializer.save()
-        return self.response_handel(serializer, status_code=status_code)
+        return self.response_handel(serializer, status_code)
 
     @staticmethod
     def __set_slug__(request):
-        request.data['slug'] = request.data['title'].replace(' ', '-')
+        request.data["slug"] = request.data["title"].replace(" ", "-")
 
     def edit(self, instance, request):
         self.__set_slug__(request)
         serializer = self.get_serializer(instance, data=request.data)
-        return self.__save_post__(serializer, status_code=status.HTTP_202_ACCEPTED)
+        return self.__save_post__(serializer, status.HTTP_202_ACCEPTED)
 
     def del_handle(self, request, pk):
         post = self.get_object(pk)
