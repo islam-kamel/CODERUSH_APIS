@@ -6,15 +6,15 @@ from .helpers.get_object import GetObject
 from .helpers.posts_manage import (
     GetPost,
     Serializer,
-    CreatePost
+    PostManage
 )
 
 
-class PostsListAPIView(APIView, GetPost, CreatePost):
+class PostsListAPIView(APIView, GetPost, PostManage):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get(self, request):
-        return Response(self.get_posts)
+        return Response(self.get_posts())
 
     def post(self, request):
         data = self.set_post(request)
@@ -22,10 +22,16 @@ class PostsListAPIView(APIView, GetPost, CreatePost):
         return Response({'failure': 'can not create post!'}, status=data['status'])
 
 
-class PostDetailsAPIView(APIView, GetObject, Serializer):
+class PostDetailsAPIView(APIView, GetObject, PostManage):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get(self, request, pk):
         post = self.get_object(pk)
         serializer = self.get_serializer(post)
         return Response(serializer.data)
+
+    def put(self, request, pk):
+        post = self.get_object(pk)
+        new = self.edit(post, request)
+        return Response(new.pop('data'), status=new.pop('status'))
+

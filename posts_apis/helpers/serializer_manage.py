@@ -3,9 +3,19 @@ Manage Serializer Method
 """
 from posts_apis.serializer import PostSerializer
 
+class Empty:
+    """
+    This class is used to represent no data being provided for a given input
+    or output value.
 
-class Serializer:
-    @staticmethod
-    def get_serializer(post=None, many=False, **kwargs):
-        if kwargs and post is None: return PostSerializer(data=kwargs['data'], many=many)
-        return PostSerializer(post, many=many)
+    It is required because `None` may be a valid input or output value.
+    """
+    pass
+
+
+class Serializer(Empty):
+    def get_serializer(self, instance=None,  data=Empty, **kwargs):
+        isMany = kwargs.pop('many', False)
+        if data is not Empty: return PostSerializer(instance, data=data, many=isMany)
+        return PostSerializer(instance, many=isMany)
+
