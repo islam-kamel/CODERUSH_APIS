@@ -2,16 +2,18 @@
 Manage all posts here.
 PostManage, GetPost, PostDetails
 """
+
 from rest_framework import status
 
 from posts_apis.models import Posts
 from .src.get_object import GetObject
+from .src.image_file import ImageManage
 from .src.serializer_manage import Serializer
 
 
-class Manage(Serializer, GetObject):
+class Manage(Serializer, GetObject, ImageManage):
     @staticmethod
-    def response_handel(response, status_code=status.HTTP_200_OK):
+    def response_handel(response=None, status_code=status.HTTP_200_OK):
         try:
             return {'data': response.data, 'status': status_code}
         except AttributeError:
@@ -19,6 +21,7 @@ class Manage(Serializer, GetObject):
 
 
 class PostManage(Manage):
+
     def set_post(self, request):
         self.__set_slug__(request)
         serializer = self.get_serializer(data=request.data)
@@ -44,6 +47,11 @@ class PostManage(Manage):
         serializer = self.get_serializer(instance, data=request.data)
         return self.__save_post__(serializer, status_code=status.HTTP_202_ACCEPTED)
 
+    def del_handle(self, request, pk):
+        post = self.get_object(pk)
+        self.remove_image(post.image)
+        post.delete()
+        return self.response_handel(status_code=status.HTTP_204_NO_CONTENT)
 
 # class UpdatePost(GetObject):
 #     def get_object(self, pk):
