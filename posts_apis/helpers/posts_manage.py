@@ -5,44 +5,43 @@ PostManage, GetPost, PostDetails
 from rest_framework import status
 
 from posts_apis.models import Posts
-from .serializer_manage import Serializer
+from .src.get_object import GetObject
+from .src.serializer_manage import Serializer
 
 
-class GetPost(Serializer):
-    def get_posts(self):
-        posts = Posts.objects.all()
-        serializer = self.get_serializer(posts, many=True)
-        return serializer.data
+class Manage(Serializer, GetObject):
+    @staticmethod
+    def response_handel(response, status_code=status.HTTP_200_OK):
+        try:
+            return {'data': response.data, 'status': status_code}
+        except AttributeError:
+            return {'errors': response, 'status': status_code}
 
 
-class PostManage(Serializer):
+class PostManage(Manage):
     def set_post(self, request):
         self.__set_slug__(request)
         serializer = self.get_serializer(data=request.data)
-        if not serializer.is_valid(): return {'post': None, 'status': status.HTTP_400_BAD_REQUEST}
         return self.__save_post__(serializer)
 
-    @staticmethod
-    def __save_post__(serializer, status_code=status.HTTP_201_CREATED):
+    def get_posts(self):
+        posts = Posts.objects.all()
+        serializer = self.get_serializer(posts, many=True)
+        return self.response_handel(serializer)
+
+    def __save_post__(self, serializer, status_code=status.HTTP_201_CREATED):
+        if not serializer.is_valid(): return self.response_handel(serializer.errors,
+                                                                  status_code=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        return {'data': serializer.data, 'status': status_code}
+        return self.response_handel(serializer, status_code=status_code)
 
     @staticmethod
     def __set_slug__(request):
-        try:
-            request.data['slug'] = request.data['title'].replace(' ', '-')
-        except KeyError:
-            return False
-
-    @staticmethod
-    def __errors__(error, status_code=status.HTTP_400_BAD_REQUEST):
-        return {'data': error, 'status': status_code}
+        request.data['slug'] = request.data['title'].replace(' ', '-')
 
     def edit(self, instance, request):
         self.__set_slug__(request)
         serializer = self.get_serializer(instance, data=request.data)
-
-        if not serializer.is_valid(): return self.__errors__(serializer.errors)
         return self.__save_post__(serializer, status_code=status.HTTP_202_ACCEPTED)
 
 
