@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'posts_apis',
+    'documentation',
+    'drf_yasg',
 
 ]
 
@@ -133,4 +135,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissions'
     ]
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'basic': {
+            'type': 'basic',
+        }
+    },
+    'LOGIN_URL': 'admin/login',
+    'LOGOUT_URL': 'admin/logout'
 }
