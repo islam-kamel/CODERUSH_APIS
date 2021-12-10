@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.timezone import datetime
-
+import PIL
 from posts_apis.helpers.src.image_file import ImageManage
 
 
@@ -16,7 +16,8 @@ class Posts(models.Model, ImageManage):
 
     title = models.CharField(max_length=250)
     content = models.TextField()
-    image = models.ImageField(upload_to=ImageManage.set_image_file, blank=True)
+    image = models.ImageField(upload_to=ImageManage.set_image_file,
+                              blank=True, null=True)
     published = models.BooleanField(default=True)
     slug = models.SlugField()
     create_at = models.DateTimeField(auto_now_add=datetime.now)
@@ -28,6 +29,13 @@ class Posts(models.Model, ImageManage):
 
     class Meta:
         ordering = ('-create_at',)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        image = PIL.Image.open(self.image.path)
+        height, width = image.size
+        image = image.resize((height, width), PIL.Image.ANTIALIAS)
+        image.save(self.image.path, optimize=True, quality=90)
 
     def __str__(self):
         return self.title

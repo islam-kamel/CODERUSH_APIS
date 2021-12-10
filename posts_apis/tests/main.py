@@ -1,6 +1,3 @@
-"""
-Manage Serializer Method
-"""
 #  MIT License
 #
 #  Copyright (c) 2021 islam kamel
@@ -24,25 +21,25 @@ Manage Serializer Method
 #  THE SOFTWARE.
 #
 
-from posts_apis.serializer import PostSerializer
+from django.contrib.auth.models import User
+
+from ..models import Posts
 
 
-class Empty:
-    """
-    This class is used to represent no data being provided for a given input
-    or output value.
-    It is required because `None` may be a valid input or output value.
-    """
-    pass
+class MainMethod:
+    def __init__(self):
+        self.user = None
+        self.post = None
 
+    def create_user(self, username=None, password=None):
+        self.user = User.objects.create(username=username, password=password)
 
-class Serializer(Empty):
-    """
-    This class is used to convert data to  Json
-    It is required because instance.
-    """
+    def create_post(self, **kwargs):
+        title = kwargs.pop('title')
+        content = kwargs.pop('content')
+        auth = kwargs.pop('user')
 
-    def get_serializer(self, instance=None, data=Empty, **kwargs):
-        isMany = kwargs.pop('many', False)
-        if data is not Empty: return PostSerializer(instance, data=data, many=isMany)
-        return PostSerializer(instance, many=isMany)
+        self.post = Posts.objects.create(title=title, content=content,
+                                         create_by_id=auth,
+                                         image='D:\my-developer\CodeRushWebApp\CODERUSH_DRF\media\posts\996ad860-2a9a-504f-8861-aeafd0b2ae29.jpg'
+                                         )
