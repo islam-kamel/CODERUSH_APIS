@@ -4,6 +4,8 @@ from .models import Posts
 
 
 class PostSerializer(serializers.ModelSerializer):
+    slug = serializers.SlugField(read_only=True)
+
     class Meta:
         model = Posts
-        fields = '__all__'
+        fields = ['id', 'title', 'content', 'image', 'create_by', 'slug']

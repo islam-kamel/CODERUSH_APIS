@@ -24,69 +24,125 @@ PostManage, GetPost, PostDetails
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-#
 
 from rest_framework import status
+from django.db.models import Q
 
 from posts_apis.models import Posts
+from .manager import *
 from .src.get_object import GetObject
 from .src.image_file import ImageManage
 from .src.serializer_manage import Serializer
 
 
-class Manage(Serializer, GetObject, ImageManage):
-    @staticmethod
-    def response_handel(response=None, status_code=status.HTTP_200_OK):
-        try:
-            return {"data": response.data, "status": status_code}
-        except AttributeError:
-            return {"errors": response, "status": status_code}
+# class Manage(Serializer, GetObject, ImageManage):
+#     @staticmethod
+#     def response_handel(response=None, status_code=status.HTTP_200_OK):
+#         try:
+#             return {"data": response.data, "status": status_code}
+#         except AttributeError:
+#             return {"errors": response, "status": status_code}
+#
+#     @staticmethod
+#     def __set_slug__(request):
+#         try:
+#             request.data["slug"] = request.data["title"].replace(" ", "-").lowr()
+#         except AttributeError:
+#             pass
 
 
-class PostManage(Manage):
+class DBManager(AbstractSaveDB):
+    __STATUS_CODE = status.HTTP_200_OK
+    __SERIALIZER = None
 
-    def set_post(self, request):
-        self.__set_slug__(request)
-        serializer = self.get_serializer(data=request.data)
-        return self.__save_post__(serializer)
+    def __save_post__(self):
+        if self.__SERIALIZER.is_valid():
+            self.__SERIALIZER.save()
+            return self.response_handel(self.__SERIALIZER, self.__STATUS_CODE)
+
+        return self.response_handel(self.__SERIALIZER,
+                                    status_code=status.HTTP_400_BAD_REQUEST)
+
+    def set_data(self, serializer):
+        self.__SERIALIZER = serializer
+        return self.__save_post__()
+
+
+class GetPost(AbstractGetPostManager):
 
     def get_posts(self):
         posts = Posts.objects.all()
         serializer = self.get_serializer(posts, many=True)
         return self.response_handel(serializer)
 
-    def __save_post__(self, serializer, status_code=status.HTTP_201_CREATED):
-        if not serializer.is_valid():
-            return self.response_handel(
-                serializer.errors, status.HTTP_400_BAD_REQUEST
-            )
-        serializer.save()
-        return self.response_handel(serializer, status_code)
 
-    @staticmethod
-    def __set_slug__(request):
-        request.data["slug"] = request.data["title"].replace(" ", "-")
+class CreatePost(AbstractCreatePostManager, DBManager):
 
-    def edit(self, instance, request):
-        self.__set_slug__(request)
+    def set_post(self, request=None):
+        # self._set_slug__(request)
+        serializer = self.get_serializer(data=request.data)
+        return self.set_data(serializer)
+
+
+class GetPostDetails(AbstractGetPostDetailsManger):
+
+    def get_object(self, pk=Empty, slug=Empty):
+        try:
+            return Posts.objects.get(Q(pk=pk) & Q(slug=slug))
+        except Posts.DoesNotExist:
+            raise Http404
+
+
+class UpdatePost(AbstractUpdatePost, DBManager):
+
+    def edit(self, instance=None, request=None):
         serializer = self.get_serializer(instance, data=request.data)
-        return self.__save_post__(serializer, status.HTTP_202_ACCEPTED)
+        return self.set_data(serializer)
 
-    def del_handle(self, request, pk):
-        post = self.get_object(pk)
+
+class DeletePost(AbstractDeletePost):
+
+    def del_handle(self, request=None, pk=None, slug=None):
+        post = self.get_object(pk, slug)
         self.remove_image(post.image)
         post.delete()
         return self.response_handel(status_code=status.HTTP_204_NO_CONTENT)
 
-# class UpdatePost(GetObject):
-#     def get_object(self, pk):
-#         try:
-#             return Posts.objects.get(pk=pk)
-#         except Posts.DoesNotExist:
-#             raise Http404
+
+# class PostManage(Manage):
 #
-#     def Update(self, request, pk):
+#     def set_post(self, request):
+#         self.__set_slug__(request)
+#         serializer = self.get_serializer(data=request.data)
+#         return self.__save_post__(serializer)
+#
+#     def get_posts(self):
+#         posts = Posts.objects.all()
+#         serializer = self.get_serializer(posts, many=True)
+#         return self.response_handel(serializer)
+#
+#     def __save_post__(self, serializer, status_code=status.HTTP_201_CREATED):
+#         if not serializer.is_valid():
+#             return self.response_handel(
+#                 serializer.errors, status.HTTP_400_BAD_REQUEST
+#             )
+#         serializer.save()
+#         return self.response_handel(serializer, status_code)
+#
+#     @staticmethod
+#     def __set_slug__(request):
+#         try:
+#             request.data["slug"] = request.data["title"].replace(" ", "-")
+#         except AttributeError:
+#             pass
+#
+#     def edit(self, instance, request):
+#         self.__set_slug__(request)
+#         serializer = self.get_serializer(instance, data=request.data)
+#         return self.__save_post__(serializer, status.HTTP_202_ACCEPTED)
+#
+#     def del_handle(self, request, pk):
 #         post = self.get_object(pk)
-#         serializer = PostSerializer(post, data=request.data)
-#         if not serializer.is_valid(): return {'post': None, 'status': status.HTTP_400_BAD_REQUEST}
-#         return PostManage.save_post(serializer)
+#         self.remove_image(post.image)
+#         post.delete()
+#         return self.response_handel(status_code=status.HTTP_204_NO_CONTENT)

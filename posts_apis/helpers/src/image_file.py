@@ -41,7 +41,6 @@ class ImageManage:
 
     @staticmethod
     def set_image_file(instance, filename):
-        print()
         ext = filename.split(".")[-1]
         name = uuid.uuid5(uuid.NAMESPACE_OID, str(instance.create_by.id))
         filename = '%s.%s' % (name, ext)
