@@ -35,12 +35,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'posts_apis',
     'documentation',
-    'drf_yasg',
+    'user',
+    'drf_yasg',  # Using in documentation app
 
 ]
+
+AUTH_USER_MODEL = 'user.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
