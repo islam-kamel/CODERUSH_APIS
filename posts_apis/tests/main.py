@@ -41,5 +41,4 @@ class MainMethod:
 
         self.post = Posts.objects.create(title=title, content=content,
                                          create_by_id=auth,
-                                         image='D:\my-developer\CodeRushWebApp\CODERUSH_DRF\media\posts\996ad860-2a9a-504f-8861-aeafd0b2ae29.jpg'
                                          )

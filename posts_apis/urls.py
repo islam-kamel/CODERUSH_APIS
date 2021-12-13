@@ -6,5 +6,6 @@ appname = 'posts_view'
 
 urlpatterns = [
     path('posts/', PostsListAPIView.as_view()),
-    path('posts/<int:pk>/', PostDetailsAPIView.as_view())
+    path('posts/<str:slug>-<int:pk>/', PostDetailsAPIView.as_view(),
+         name='post_details')
 ]
