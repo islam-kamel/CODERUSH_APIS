@@ -21,7 +21,9 @@
 #  THE SOFTWARE.
 #
 
-from rest_framework import permissions
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -29,7 +31,7 @@ from posts_apis.helpers.models import ListAllPosts, PostsDetails
 
 
 class PostsListAPIView(APIView, ListAllPosts):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
         response = self.posts_list
@@ -46,27 +48,22 @@ class PostsListAPIView(APIView, ListAllPosts):
 
 
 class PostDetailsAPIView(APIView, PostsDetails):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, slug, pk):
         self.get_post = {'slug': slug, 'pk': pk}
         return Response(self.get_post.data)
 
-    #     post = self.get_object(pk)
-    #     serializer = self.get_serializer(post)
-    #     return Response(serializer.data)
-    #
     def put(self, request, slug, pk):
-        data = self.update(request, slug, pk)
-        return Response(data.pop('data'), data.pop('status'))
+        if self.is_writer(request, pk, 'PUT'):
+            data = self.update(request, slug, pk)
+            return Response(data.pop('data'), data.pop('status'))
 
-        # post = self.get_object(pk)
-        # new = self.edit(post, request)
-        # try:
-        #     if not new["data"] is None:
-        #         return Response(new["data"], status=new["status"])
-        # except KeyError:
-        #     return Response(new["errors"], status=new["status"])
+        response = self.response_handel('Method Not Allowed', 'errors')
+        return Response(response['errors'], response['status'])
 
     def delete(self, request, slug, pk):
-        return Response(self.delete_post(request, pk, slug))
+        if self.is_writer(request, pk, 'DELETE'):
+            return Response(self.delete_post(request, pk, slug))
+        response = self.response_handel('Method Not Allowed', 'errors')
+        return Response(response['errors'], status=response['status'])

@@ -56,5 +56,5 @@ class Posts(models.Model):
                 height, width = image.size
                 image = image.resize((height, width), PIL.Image.ANTIALIAS)
                 image.save(self.image.path, optimize=True, quality=90)
-            except ValueError:
-                pass
+            except FileNotFoundError:
+                raise ValueError('can not open the image invalid path')

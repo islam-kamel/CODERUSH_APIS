@@ -4,7 +4,7 @@ from django.contrib.auth.models import (
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-
+from posts_apis.models import Posts
 
 class UserManager(BaseUserManager):
     def create_superuser(self, username, nickname, email, phone, password,
@@ -18,7 +18,7 @@ class UserManager(BaseUserManager):
                 'you must an assigned is_superuser=True'
             )
         if other_fields.get('is_staff') is not True:
-            raise ValuError(
+            raise ValueError(
                 'you must an assigned is_staff=True'
             )
         return self.create_user(username, nickname, email, phone, password,
@@ -75,6 +75,24 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['nickname', 'email', 'phone']
+
+    # @staticmethod
+    # def is_writer(request, , method):
+    #     if request.method == method and request.user.pk is not None:
+    #         user_id = User.objects.get(pk=request.user.pk)
+    #         if user_id is not None:
+    #             try:
+    #                 post = Posts.objects.get(pk=obj)
+    #                 try:
+    #                     user = User.objects.get(pk=post.create_by_id)
+    #                 except User.DoesNotExist:
+    #                     return False
+    #
+    #                 if post.create_by_id == user.pk:
+    #                     if request.user.pk == user.pk:
+    #                         return True
+    #             except Posts.DoesNotExist:
+    #                 return False
 
     def __str__(self):
         return self.username
