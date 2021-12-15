@@ -19,26 +19,17 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-#
 
-from django.contrib.auth.models import User
+from django.urls import path, include
+from rest_framework_simplejwt import views as jwt_views
+import rest_framework
 
-from ..models import Posts
+urlpatterns = [
 
+    path('token/', jwt_views.TokenObtainPairView.as_view(),
+         name='token-obtain-pair'),
+    path('refresh/', jwt_views.TokenRefreshView.as_view(),
+         name='refresh-token'),
 
-class MainMethod:
-    def __init__(self):
-        self.user = None
-        self.post = None
-
-    def create_user(self, username=None, password=None):
-        self.user = User.objects.create(username=username, password=password)
-
-    def create_post(self, **kwargs):
-        title = kwargs.pop('title')
-        content = kwargs.pop('content')
-        auth = kwargs.pop('user')
-
-        self.post = Posts.objects.create(title=title, content=content,
-                                         create_by_id=auth,
-                                         )
+    path('api-auth/', include('rest_framework.urls'))
+]

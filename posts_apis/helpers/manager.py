@@ -4,7 +4,7 @@ PostManage, GetPost, PostDetails
 """
 
 from abc import ABC, abstractmethod
-
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 #  MIT License
 #
 #  Copyright (c) 2021 islam kamel
@@ -26,26 +26,33 @@ from abc import ABC, abstractmethod
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import *
 
 from .src.get_object import GetObject
 from .src.image_file import ImageManage
 from .src.serializer_manage import Serializer
 from .src.typing import Empty
+from django.contrib.auth import get_user_model
+from posts_apis.models import Posts
 
 
 class Manage(Serializer, GetObject, ImageManage):
+
     try:
         status = HTTP_200_OK
     except NameError as e:
         raise "Please install rest_framework"
 
     @staticmethod
-    def response_handel(response=None, status_code=status):
+    def response_handel(response=None, status_code: str = status):
+        STATUS = {
+            'errors': HTTP_400_BAD_REQUEST,
+            'deleted': HTTP_204_NO_CONTENT,
+        }
         try:
             return {"data": response.data, "status": status_code}
         except AttributeError:
-            return {"errors": response, "status": status_code}
+            return {"errors": response, "status": STATUS[status_code]}
 
     # @staticmethod
     # def _set_slug__(request):
@@ -61,7 +68,7 @@ class AbstractSaveDB(ABC, Manage):
     __SERIALIZER = Empty
 
     @abstractmethod
-    def __save_post__(self):
+    def __save_post__(self, **kwargs):
         raise NotImplementedError
 
 
@@ -83,7 +90,7 @@ class AbstractGetPostManager(ABC, Manage):
 
 class AbstractGetPostDetailsManger(ABC, Manage):
     @abstractmethod
-    def get_object(self):
+    def get_object(self, **kwargs):
         raise NotImplementedError
 
 
@@ -92,6 +99,24 @@ class AbstractUpdatePost(ABC):
     def edit(self):
         raise NotImplementedError
 
+    @staticmethod
+    def is_writer(request, pk, method):
+        USER = get_user_model()
+        if request.method == method and request.user.pk is not None:
+            user_id = USER.objects.get(pk=request.user.pk)
+            if user_id is not None:
+                try:
+                    post = Posts.objects.get(pk=pk)
+                    try:
+                        user = USER.objects.get(pk=post.create_by_id)
+                    except User.DoesNotExist:
+                        return False
+
+                    if post.create_by_id == user.pk:
+                        if request.user.pk == user.pk:
+                            return True
+                except Posts.DoesNotExist:
+                    return False
 
 class AbstractDeletePost(ABC, Manage):
     @abstractmethod

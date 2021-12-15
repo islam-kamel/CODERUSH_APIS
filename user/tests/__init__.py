@@ -1,6 +1,3 @@
-"""
-Manage Serializer Method
-"""
 #  MIT License
 #
 #  Copyright (c) 2021 islam kamel
@@ -23,18 +20,3 @@ Manage Serializer Method
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 #
-
-from posts_apis.serializer import PostSerializer
-from .typing import Empty
-
-
-class Serializer:
-    """
-    This class is used to convert data to  Json
-    It is required because instance.
-    """
-    def get_serializer(self, instance=None, data=Empty, **kwargs):
-        isMany = kwargs.pop('many', False)
-        if data is not Empty:
-            return PostSerializer(instance, data=data, many=isMany)
-        return PostSerializer(instance, many=isMany)
