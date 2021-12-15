@@ -82,15 +82,3 @@ class TestUserModel(TestCase):
             db.objects.create_superuser(
                 username='super', nickname='super', email='', password='super',
                 phone='01066373279')
-
-    def test_perm(self):
-        user = get_user_model()
-
-        class request:
-            method = 1
-
-            class user:
-                pk = 1
-
-        x = user.has_object_permission(self, request, 'PUT', '')
-        self.assertFalse(x)

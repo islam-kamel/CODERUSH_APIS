@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from posts_apis.models import Posts
 
+
 class UserManager(BaseUserManager):
     def create_superuser(self, username, nickname, email, phone, password,
                          **other_fields):

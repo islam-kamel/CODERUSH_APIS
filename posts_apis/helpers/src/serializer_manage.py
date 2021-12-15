@@ -33,9 +33,8 @@ class Serializer:
     This class is used to convert data to  Json
     It is required because instance.
     """
-
     def get_serializer(self, instance=None, data=Empty, **kwargs):
         isMany = kwargs.pop('many', False)
-        if data is not Empty: return PostSerializer(instance, data=data,
-                                                    many=isMany)
+        if data is not Empty:
+            return PostSerializer(instance, data=data, many=isMany)
         return PostSerializer(instance, many=isMany)

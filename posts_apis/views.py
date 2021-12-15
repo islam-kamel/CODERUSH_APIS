@@ -58,12 +58,12 @@ class PostDetailsAPIView(APIView, PostsDetails):
         if self.is_writer(request, pk, 'PUT'):
             data = self.update(request, slug, pk)
             return Response(data.pop('data'), data.pop('status'))
-
         response = self.response_handel('Method Not Allowed', 'errors')
         return Response(response['errors'], response['status'])
 
     def delete(self, request, slug, pk):
         if self.is_writer(request, pk, 'DELETE'):
-            return Response(self.delete_post(request, pk, slug))
+            data = self.delete_post(request, pk, slug)
+            return Response(data['errors'], data['status'])
         response = self.response_handel('Method Not Allowed', 'errors')
         return Response(response['errors'], status=response['status'])

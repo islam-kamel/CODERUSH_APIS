@@ -68,7 +68,7 @@ class AbstractSaveDB(ABC, Manage):
     __SERIALIZER = Empty
 
     @abstractmethod
-    def __save_post__(self):
+    def __save_post__(self, **kwargs):
         raise NotImplementedError
 
 
@@ -117,7 +117,6 @@ class AbstractUpdatePost(ABC):
                             return True
                 except Posts.DoesNotExist:
                     return False
-
 
 class AbstractDeletePost(ABC, Manage):
     @abstractmethod

@@ -25,14 +25,10 @@ PostManage, GetPost, PostDetails
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-from rest_framework import status
 from django.db.models import Q
-from rest_framework.permissions import SAFE_METHODS, BasePermission
-from posts_apis.models import Posts
+from rest_framework import status
+
 from .manager import *
-from .src.get_object import GetObject
-from .src.image_file import ImageManage
-from .src.serializer_manage import Serializer
 
 
 # class Manage(Serializer, GetObject, ImageManage):
@@ -55,17 +51,17 @@ class DBManager(AbstractSaveDB):
     __STATUS_CODE = status.HTTP_200_OK
     __SERIALIZER = None
 
-    def __save_post__(self):
+    def __save_post__(self, request):
         if self.__SERIALIZER.is_valid():
-            self.__SERIALIZER.save()
+            self.__SERIALIZER.save(create_by=request.user)
             return self.response_handel(self.__SERIALIZER, self.__STATUS_CODE)
 
         return self.response_handel(self.__SERIALIZER,
-                                    status_code=status.HTTP_400_BAD_REQUEST)
+                                    status_code='errors')
 
-    def set_data(self, serializer):
+    def set_data(self, serializer, request):
         self.__SERIALIZER = serializer
-        return self.__save_post__()
+        return self.__save_post__(request)
 
 
 class GetPost(AbstractGetPostManager):
@@ -81,7 +77,7 @@ class CreatePost(AbstractCreatePostManager, DBManager):
     def set_post(self, request=None):
         # self._set_slug__(request)
         serializer = self.get_serializer(data=request.data)
-        return self.set_data(serializer)
+        return self.set_data(serializer, request)
 
 
 class GetPostDetails(AbstractGetPostDetailsManger):
@@ -96,8 +92,9 @@ class GetPostDetails(AbstractGetPostDetailsManger):
 class UpdatePost(AbstractUpdatePost, DBManager):
 
     def edit(self, instance=None, request=None):
-        serializer = self.get_serializer(instance, data=request.data)
-        return self.set_data(serializer)
+        serializer = self.get_serializer(instance, data=request.data,
+                                         owner=request.data['create_by'])
+        return self.set_data(serializer, request)
 
 
 class DeletePost(AbstractDeletePost):
@@ -106,8 +103,7 @@ class DeletePost(AbstractDeletePost):
         post = self.get_object(pk, slug)
         self.remove_image(post.image)
         post.delete()
-        return self.response_handel(status_code=status.HTTP_204_NO_CONTENT)
-
+        return self.response_handel(status_code='deleted')
 
 # class PostManage(Manage):
 #

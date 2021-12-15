@@ -39,6 +39,7 @@ class ListAllPosts(GetPost, CreatePost):
 
     @posts_list.setter
     def posts_list(self, request=None):
+        # request.data['create_by'] = request.user.pk
         self.__REQUEST = self.set_post(request)
 
 
@@ -57,11 +58,12 @@ class PostsDetails(GetPostDetails, UpdatePost, DeletePost):
         try:
             self.__SLUG, self.__PK = args[0]['slug'], args[0]['pk']
         except KeyError:
-            raise 'KeyError: You have to send such a pattern {slug: slug,pk: pk}.'
+            raise 'You have to send such a pattern {slug: slug,pk: pk}.'
         self.__DATA = self.get_object(self.__PK, self.__SLUG)
         self.__SERIALIZER = self.get_serializer(self.__DATA)
 
     def update(self, request=Empty, slug=Empty, pk=Empty):
+        # request.data['create_by'] = request.user.pk
         instance = self.get_object(pk, slug)
         return self.edit(instance, request)
 
