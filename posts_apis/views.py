@@ -51,12 +51,11 @@ class PostDetailsAPIView(APIView, PostsDetails):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, slug, pk):
-        self.get_post = {'slug': slug, 'pk': pk}
         return Response(self.get_post.data)
 
     def put(self, request, slug, pk):
         if self.is_writer(request, pk, 'PUT'):
-            data = self.update(request, slug, pk)
+            data = self.update(request)
             return Response(data.pop('data'), data.pop('status'))
         response = self.response_handel('Method Not Allowed', 'errors')
         return Response(response['errors'], response['status'])
