@@ -133,7 +133,7 @@ class TestPostsAPIView(APITestCase):
 
         response = self.client.delete(self.post_details_url)
 
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
 
     def test_create_post_api_view(self):
         credentials = {
@@ -154,7 +154,7 @@ class TestPostsAPIView(APITestCase):
         }
 
         response = self.client.post(self.posts_list_url, data=data)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['title'], 'Test')
         self.assertEqual(response.json()['content'], 'Test')
         self.assertEqual(response.json()['create_by'], self.user.pk)

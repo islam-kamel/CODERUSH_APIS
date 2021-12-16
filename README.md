@@ -2,7 +2,7 @@
 this is project development for support Arab developer community 🔥
 
 ![GitHub](https://img.shields.io/github/license/islam-kamel/CODERUSH_APIS)
-![Coverage](https://img.shields.io/badge/Coverage-80%25-green)
+![Coverage](https://img.shields.io/badge/Coverage-96%25-succss)
 ![Website](https://img.shields.io/website?down_color=read&down_message=Failure&up_color=green&up_message=Up&url=https%3A%2F%2Fcoderushapis.herokuapp.com%2F)
 ## API Reference
 

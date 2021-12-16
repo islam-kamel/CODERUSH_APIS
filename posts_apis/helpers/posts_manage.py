@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 #  Copyright (c) 2021 islam kamel
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
-#  of this software and associated documentation files (the "Software"), to deal
+#  of this software and associated documentation files (the "Software"),to deal
 #  in the Software without restriction, including without limitation the rights
 #  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #  copies of the Software, and to permit persons to whom the Software is
@@ -23,12 +23,19 @@ from django.shortcuts import get_object_or_404
 #  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 #  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  LIABILITY,WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 from rest_framework import status
-
-from .manager import *
+from posts_apis.models import Posts
+from .manager import (
+    AbstractDeletePost,
+    AbstractSaveDB,
+    AbstractUpdatePost,
+    AbstractGetPostManager,
+    AbstractGetPostDetailsManger,
+    AbstractCreatePostManager
+)
 
 
 class DBManager(AbstractSaveDB):
@@ -38,9 +45,9 @@ class DBManager(AbstractSaveDB):
     def __save_post__(self, request):
         if self.__SERIALIZER.is_valid():
             self.__SERIALIZER.save(create_by=request.user)
-            return self.response_handel(self.__SERIALIZER, self.__STATUS_CODE)
+            return self.response_handel(self.__SERIALIZER.data)
 
-        return self.response_handel(self.__SERIALIZER,
+        return self.response_handel(self.__SERIALIZER.errors,
                                     status_code='errors')
 
     def set_data(self, serializer, request):
@@ -49,17 +56,18 @@ class DBManager(AbstractSaveDB):
 
 
 class GetPost(AbstractGetPostManager):
+    def get_object(self):
+        return Posts.objects.all()
 
     def get_posts(self):
-        posts = Posts.objects.all()
-        serializer = self.get_serializer(posts, many=True)
-        return self.response_handel(serializer)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance=instance, many=True)
+        return self.response_handel(serializer.data)
 
 
 class CreatePost(AbstractCreatePostManager, DBManager):
 
     def set_post(self, request=None):
-        # self._set_slug__(request)
         serializer = self.get_serializer(data=request.data)
         return self.set_data(serializer, request)
 
@@ -77,16 +85,16 @@ class GetPostDetails(AbstractGetPostDetailsManger):
 
 class UpdatePost(AbstractUpdatePost, DBManager):
 
-    def edit(self, instance=None, request=None):
-        serializer = self.get_serializer(instance, data=request.data,
-                                         owner=request.data['create_by'])
+    def edit(self, request=None):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance=instance, new_data=request)
         return self.set_data(serializer, request)
 
 
 class DeletePost(AbstractDeletePost):
 
-    def del_handle(self, request=None, pk=None, slug=None):
-        post = self.get_object(pk, slug)
+    def del_handle(self):
+        post = self.get_object()
         self.remove_image(post.image)
         post.delete()
         return self.response_handel(status_code='deleted')
