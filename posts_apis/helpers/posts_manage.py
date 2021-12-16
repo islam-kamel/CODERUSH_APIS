@@ -3,6 +3,8 @@ Manage all posts here.
 PostManage, GetPost, PostDetails
 """
 
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 #  MIT License
 #
 #  Copyright (c) 2021 islam kamel
@@ -24,27 +26,9 @@ PostManage, GetPost, PostDetails
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-
-from django.db.models import Q
 from rest_framework import status
 
 from .manager import *
-
-
-# class Manage(Serializer, GetObject, ImageManage):
-#     @staticmethod
-#     def response_handel(response=None, status_code=status.HTTP_200_OK):
-#         try:
-#             return {"data": response.data, "status": status_code}
-#         except AttributeError:
-#             return {"errors": response, "status": status_code}
-#
-#     @staticmethod
-#     def __set_slug__(request):
-#         try:
-#             request.data["slug"] = request.data["title"].replace(" ", "-").lowr()
-#         except AttributeError:
-#             pass
 
 
 class DBManager(AbstractSaveDB):
@@ -81,12 +65,14 @@ class CreatePost(AbstractCreatePostManager, DBManager):
 
 
 class GetPostDetails(AbstractGetPostDetailsManger):
+    @property
+    def __get_queryset__(self):
+        return Posts.objects.all()
 
-    def get_object(self, pk=Empty, slug=Empty):
-        try:
-            return Posts.objects.get(Q(pk=pk) & Q(slug=slug))
-        except Posts.DoesNotExist:
-            raise Http404
+    def get_object(self):
+        return get_object_or_404(self.__get_queryset__,
+                                 Q(pk=self.kwargs['pk']) &
+                                 Q(slug=self.kwargs['slug']))
 
 
 class UpdatePost(AbstractUpdatePost, DBManager):
@@ -104,41 +90,3 @@ class DeletePost(AbstractDeletePost):
         self.remove_image(post.image)
         post.delete()
         return self.response_handel(status_code='deleted')
-
-# class PostManage(Manage):
-#
-#     def set_post(self, request):
-#         self.__set_slug__(request)
-#         serializer = self.get_serializer(data=request.data)
-#         return self.__save_post__(serializer)
-#
-#     def get_posts(self):
-#         posts = Posts.objects.all()
-#         serializer = self.get_serializer(posts, many=True)
-#         return self.response_handel(serializer)
-#
-#     def __save_post__(self, serializer, status_code=status.HTTP_201_CREATED):
-#         if not serializer.is_valid():
-#             return self.response_handel(
-#                 serializer.errors, status.HTTP_400_BAD_REQUEST
-#             )
-#         serializer.save()
-#         return self.response_handel(serializer, status_code)
-#
-#     @staticmethod
-#     def __set_slug__(request):
-#         try:
-#             request.data["slug"] = request.data["title"].replace(" ", "-")
-#         except AttributeError:
-#             pass
-#
-#     def edit(self, instance, request):
-#         self.__set_slug__(request)
-#         serializer = self.get_serializer(instance, data=request.data)
-#         return self.__save_post__(serializer, status.HTTP_202_ACCEPTED)
-#
-#     def del_handle(self, request, pk):
-#         post = self.get_object(pk)
-#         self.remove_image(post.image)
-#         post.delete()
-#         return self.response_handel(status_code=status.HTTP_204_NO_CONTENT)

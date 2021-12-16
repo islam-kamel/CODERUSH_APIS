@@ -26,6 +26,7 @@ from .posts_manage import GetPost
 from .posts_manage import GetPostDetails
 from .posts_manage import UpdatePost
 from .src.typing import Empty
+from rest_framework.views import APIView
 
 
 class ListAllPosts(GetPost, CreatePost):
@@ -39,32 +40,16 @@ class ListAllPosts(GetPost, CreatePost):
 
     @posts_list.setter
     def posts_list(self, request=None):
-        # request.data['create_by'] = request.user.pk
         self.__REQUEST = self.set_post(request)
 
 
 class PostsDetails(GetPostDetails, UpdatePost, DeletePost):
-    __DATA = Empty
-    __SLUG = Empty
-    __PK = Empty
-    __SERIALIZER = Empty
-
     @property
     def get_post(self):
-        return self.__SERIALIZER
+        return self.get_serializer(self.get_object())
 
-    @get_post.setter
-    def get_post(self, *args):
-        try:
-            self.__SLUG, self.__PK = args[0]['slug'], args[0]['pk']
-        except KeyError:
-            raise 'You have to send such a pattern {slug: slug,pk: pk}.'
-        self.__DATA = self.get_object(self.__PK, self.__SLUG)
-        self.__SERIALIZER = self.get_serializer(self.__DATA)
-
-    def update(self, request=Empty, slug=Empty, pk=Empty):
-        # request.data['create_by'] = request.user.pk
-        instance = self.get_object(pk, slug)
+    def update(self, request=Empty):
+        instance = self.get_object()
         return self.edit(instance, request)
 
     def delete_post(self, request, pk, slug):
