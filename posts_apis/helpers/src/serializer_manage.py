@@ -6,7 +6,7 @@ Manage Serializer Method
 #  Copyright (c) 2021 islam kamel
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
-#  of this software and associated documentation files (the "Software"), to deal
+#  of this software and associated documentation files (the "Software"),to deal
 #  in the Software without restriction, including without limitation the rights
 #  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #  copies of the Software, and to permit persons to whom the Software is
@@ -19,22 +19,25 @@ Manage Serializer Method
 #  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 #  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  LIABILITY,WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 #
 
 from posts_apis.serializer import PostSerializer
 from .typing import Empty
+from .get_object import GetObject
 
 
-class Serializer:
+class Serializer(GetObject):
     """
     This class is used to convert data to  Json
     It is required because instance.
     """
-    def get_serializer(self, instance=None, data=Empty, **kwargs):
+    def get_serializer(self, **kwargs):
+        instance = kwargs.pop('instance')
         isMany = kwargs.pop('many', False)
-        if data is not Empty:
-            return PostSerializer(instance, data=data, many=isMany)
-        return PostSerializer(instance, many=isMany)
+        if not isMany:
+            return PostSerializer(instance, many=isMany)
+        new_data = kwargs.pop('new_data').data
+        return PostSerializer(instance, data=new_data, many=isMany)
